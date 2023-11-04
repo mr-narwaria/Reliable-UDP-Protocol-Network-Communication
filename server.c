@@ -31,24 +31,23 @@ int main() {
 
     struct input_server input = read_input("support/server.in");
 
-    /*Main Thread Setup*/
-    servPort = input.portServer;   /* First arg: local port */
+    servPort = input.portServer; 
     max_window_size = input.max_window_size;
     plp = input.prob;
     seed = input.seed;
     srand(seed);
 
-    /* Create socket for incoming connections */
+    // Create socket for incoming connections 
     if ((servSock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
         DieWithError("socket () failed");
 
-    /* Construct local address structure */
+    // Construct local address structure
     memset(&servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servAddr.sin_port = htons(servPort);
 
-    /* Construct local address structure */
+    // Construct local address structure 
     memset(&clntAddr, 0, sizeof(clntAddr));
 
     if (bind(servSock, (struct sockaddr *)&servAddr,sizeof(servAddr)) < 0)
@@ -174,6 +173,7 @@ int getFileSize(char * filename) {
 
 }
 
+// Selective Repeat Scheme
 void selectiveRepeat(char* file_path, int sock, struct sockaddr_in clientAddr, int fileSize){
 
     FILE * fp;
@@ -198,7 +198,7 @@ void selectiveRepeat(char* file_path, int sock, struct sockaddr_in clientAddr, i
 
     for(int index = 0; remSize > 0; index = (index + 1) % seq_number) {
 
-        //Send the first packet of the buffer
+        // Send the first packet of the buffer
         struct packet pck;
         memset(&pck, 0, sizeof(pck));
         pck.len = DATASIZE + HEADERSIZE;
@@ -256,6 +256,7 @@ void selectiveRepeat(char* file_path, int sock, struct sockaddr_in clientAddr, i
     printStrSp("Finished: File is Transfering Successfully");
 }
 
+// Stop and Wait Scheme
 void stopAndWait(char* file_path, int sock, struct sockaddr_in clientAddr, int fileSize) {
 
     FILE * fp;
@@ -277,7 +278,7 @@ void stopAndWait(char* file_path, int sock, struct sockaddr_in clientAddr, int f
 
     for(int index = 0; remSize > 0; index = (index + 1) % seq_number) {
 
-        //Send the first packet of the buffer
+        // Send the first packet of the buffer
         struct packet pck;
         memset(&pck, 0, sizeof(pck));
         pck.len = DATASIZE + HEADERSIZE;
@@ -288,7 +289,7 @@ void stopAndWait(char* file_path, int sock, struct sockaddr_in clientAddr, int f
 
         pck.cksum = crc16(pck.data, strlen(pck.data));
 
-        //LOSS Simulation
+        // Loss Simulation
         float random = ((float)rand()/(float)(RAND_MAX));
 
         printStr("Send a pck");
@@ -301,7 +302,7 @@ void stopAndWait(char* file_path, int sock, struct sockaddr_in clientAddr, int f
         struct ack_packet ackPck;
         int ss = sizeof(clientAddr);
         printStr("Waiting Rec ack");
-        //Blocking Recieve for ACK
+        // Blocking Recieve for ACK
         recvfrom(sock, &ackPck, sizeof(struct ack_packet), 0, (struct sockaddr*) &clientAddr, &ss);
         printStrSp("Ack Recieved");
         printNum(ackPck.ackno);
@@ -327,6 +328,7 @@ void stopAndWait(char* file_path, int sock, struct sockaddr_in clientAddr, int f
     printStrSp("Finished: File is Transfering Successfully");
 }
 
+// Go-Back and N scheme
 void gbn(char* file_path, int sock, struct sockaddr_in clientAddr, int fileSize) {
     FILE * fp;
     int remSize = fileSize;
@@ -364,7 +366,7 @@ void gbn(char* file_path, int sock, struct sockaddr_in clientAddr, int fileSize)
              pck.cksum = crc16(pck.data, strlen(pck.data));
              packBuff[nextSeq] = pck; // difference between stop and wait and gbn
 
-             //LOSS Simulation
+             // loss Simulation
              float random = ((float)rand()/(float)(RAND_MAX));
 
              printStr("Send a packet");
@@ -383,10 +385,9 @@ void gbn(char* file_path, int sock, struct sockaddr_in clientAddr, int fileSize)
         struct ack_packet ackPck;
         int ss = sizeof(clientAddr);
         printStrSp("Waiting Rec ack");
-        //Blocking Recieve for ACK
+        // Blocking Recieve for ACK
         recvfrom(sock, &ackPck, sizeof(struct ack_packet), 0, (struct sockaddr*) &clientAddr, &ss);
         printStrSp("Ack Recieved");
-        // printNum(ackPck.ackno);
         base = (ackPck.ackno + 1) % seq_number;
 
         if (bufferSize == 0 && remSize > DATASIZE) {
