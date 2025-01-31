@@ -1,5 +1,4 @@
-### Reliable Data Transfer Project - ReliableUDP
-
+### Reliable UDP Protocol – Network Communication
 The most famous reliable transport layer protocol is TCP. This project simulates a reliable data transfer protocol by implementing a reliable layer on UDP
 The reliable layer is implemented as an application layer protocol, as implementing it as a transport layer protocol would require changing the OS code. It
 demonstrates reliable data transfer between a client and a server using the Selective Repeat (SR), Go-Back-N (GBN), and Stop and Wait scheme and checks 
